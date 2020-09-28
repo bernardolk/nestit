@@ -168,7 +168,81 @@ Nestit.prototype.sum = function (field) {
 }
 
 
-Nestit.prototype.reduce = function (callback, initialValue, label) {
+Nestit.prototype.map = function (callback, label) {
+   if (this === null) {
+      throw new TypeError('this is null or not defined.');
+   }
+
+   if (!typeof callback === "function") {
+      throw "Argument " + callback + " is not a function.";
+   }
+
+   if (!label) {
+      label = "";
+   }
+
+   let O = Object(this.Array);
+   let len = O.length >>> 0;
+   let result = [];
+
+   if (len === 0) {
+      return result;
+   }
+
+   let j = 0, check_value = 0, check_key = 0, check_label = 0;
+   while (j < len) {
+      if ('values' in O[j] && Array.isArray(O[j]['values']))
+         check_value++;
+      if ('key' in O[j] && typeof O[j]['key'] === "string")
+         check_key++;
+      if ('label' in O[j] && typeof O[j]['label'] === "string")
+         check_label++;
+      j++;
+   }
+
+   if (check_value > 0 && check_value < len)
+      throw "Not all objects in array have 'values' key or contains 'values' as an non-array object.";
+
+   if (check_key > 0 && check_key < len)
+      throw "Not all objects in array have 'key' key or contains 'key' as an non-string object.";
+
+   if (check_label > 0 && check_label < len)
+      throw "Not all objects in array have 'label' key or contains 'label' as an non-string object.";
+
+
+   if (check_value > 0) {
+      let k = 0
+      while (k < len) {
+         if (k in O) {
+            let arr = Array.from(O[k]['values']);
+            let nest = new Nestit(arr).map(...arguments);
+            if (nest instanceof Nestit) {
+               O[k].values = nest.Array;
+               result.push(O[k]);
+            }
+            else {
+               result.push({ ...O[k], map: { label: label, value: nest } });
+            }
+         }
+         k++;
+      }
+      return new Nestit(result);
+   }
+   else {
+      let k = 0, result = [];
+      while (k < len) {
+         if (k in O) {
+            result.push(callback(O[k], k, O));
+         }
+         k++
+      }
+      return result;
+   }
+}
+
+
+Nestit.prototype.reduce = function(callback, initialValue, label)
+{
    if (this === null) {
       throw new TypeError('this is null or not defined.');
    }
@@ -189,7 +263,7 @@ Nestit.prototype.reduce = function (callback, initialValue, label) {
    let len = O.length >>> 0;
    let result = [];
 
-   if(len === 0){
+   if (len === 0) {
       return result;
    }
 
@@ -205,14 +279,14 @@ Nestit.prototype.reduce = function (callback, initialValue, label) {
    }
 
    if (check_value > 0 && check_value < len)
-      throw  "Not all objects in array have 'values' key or contains 'values' as an non-array object.";
+      throw "Not all objects in array have 'values' key or contains 'values' as an non-array object.";
 
 
    if (check_key > 0 && check_key < len)
-      throw  "Not all objects in array have 'key' key or contains 'key' as an non-string object.";
+      throw "Not all objects in array have 'key' key or contains 'key' as an non-string object.";
 
    if (check_label > 0 && check_label < len)
-      throw  "Not all objects in array have 'label' key or contains 'label' as an non-string object.";
+      throw "Not all objects in array have 'label' key or contains 'label' as an non-string object.";
 
 
    if (check_value > 0) {
@@ -235,11 +309,11 @@ Nestit.prototype.reduce = function (callback, initialValue, label) {
    }
    else {
       let k = 0, acc;
-      if(typeof initialValue === "function"){
+      if (typeof initialValue === "function") {
          acc = initialValue(O[0]);
          k++;
       }
-      else{
+      else {
          acc = initialValue;
       }
       while (k < len) {
@@ -251,6 +325,93 @@ Nestit.prototype.reduce = function (callback, initialValue, label) {
       return acc;
    }
 }
+
+
+Nestit.prototype.dispatch = function (argsArray) {
+   if (this === null) {
+      throw new TypeError('this is null or not defined.');
+   }
+
+   for(args of argsArray){
+      let arg_ind = argsArray.indexOf(args);
+      if(args.length !== 2){
+         throw "Wrong number of arguments at index " + arg_ind + " of dispatch argument array.";
+      }
+      if(!typeof args[0] === "function"){
+         throw "Argument " + callback + " is not a function.";
+      }
+      if (!args[1]) {
+         argsArray[arg_ind][1] = "";
+      }
+   }
+
+   let O = Object(this.Array);
+   let len = O.length >>> 0;
+   let result = [];
+
+   if (len === 0) {
+      return result;
+   }
+
+   let j = 0, check_value = 0, check_key = 0, check_label = 0;
+   while (j < len) {
+      if ('values' in O[j] && Array.isArray(O[j]['values']))
+         check_value++;
+      if ('key' in O[j] && typeof O[j]['key'] === "string")
+         check_key++;
+      if ('label' in O[j] && typeof O[j]['label'] === "string")
+         check_label++;
+      j++;
+   }
+
+   if (check_value > 0 && check_value < len)
+      throw "Not all objects in array have 'values' key or contains 'values' as an non-array object.";
+
+   if (check_key > 0 && check_key < len)
+      throw "Not all objects in array have 'key' key or contains 'key' as an non-string object.";
+
+   if (check_label > 0 && check_label < len)
+      throw "Not all objects in array have 'label' key or contains 'label' as an non-string object.";
+
+
+   if (check_value > 0) {
+      let k = 0
+      while (k < len) {
+         if (k in O) {
+            let arr = Array.from(O[k]['values']);
+            let nest = new Nestit(arr).dispatch(...arguments);
+            if (nest instanceof Nestit) {
+               O[k].values = nest.Array;
+               result.push(O[k]);
+            }
+            else {
+               result.push({ ...O[k], dispatch: nest});
+            }
+         }
+         k++;
+      }
+      return new Nestit(result);
+   }
+   else {
+      let k = 0, result = {};
+      while (k < len) {
+         if (k in O) {
+            for(args of argsArray){
+               let callback = args[0]; 
+               let eval = callback(O[k], k, O);
+               let label = args[1];
+               if(!result.hasOwnProperty(label)){
+                  result[label] = [];
+               }
+               result[label].push(eval);
+            }
+         }
+         k++
+      }
+      return result;
+   }
+}
+
 
 // let test = new Nestit(names_dataset);
 // let jjj = test.by('surname');
@@ -280,9 +441,32 @@ let bysurnamewithage = new Nestit(names_dataset)
    .Array;
 
 
+// const concat = (acc, x) => acc + '-'+ x.name;
+// const squareSumAge = (x) => x * x;
+
+let funcs = [[(x) => x.name, 'select name'],
+   [(x) => x.age * x.age, 'square of age']]
+
+// funcs.push((x) => x * x);
+// const labels = ['concat', 'squareSumAge'];
+// const modes = ['reduce', 'map']
+
+let dispatchTest = new Nestit(names_dataset)
+   .by(x => x.surname, 'surname')
+   .dispatch(funcs)
+   .Array;
+
+
+let dispatchTestActually = new Nestit(names_dataset)
+   .by(x => x.surname, 'surname')
+   .map(x => x.age * x.age, 'squareOfAges')
+   .reduce((acc, x) => acc + x.age * x.age, 0, 'squareSumOfAges')
+   .Array;
+
+
 let reduceTest = new Nestit(names_dataset)
    .by(x => x.surname, 'surname')
-   .reduce((acc, x) => acc + '-'+ x.name, x => x.name, "concatNames")
+   .reduce((acc, x) => acc + '-' + x.name, x => x.name, "concatNames")
    .Array;
 
 
