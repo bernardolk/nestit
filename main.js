@@ -1,7 +1,4 @@
 
-
-
-
 let names_dataset = [{ name: 'john', surname: 'locke', gender: 'male', age: 21 },
 { name: 'marlenne', surname: 'ferrari', gender: 'female', age: 25 },
 { name: 'maxwell', surname: 'locke', gender: 'male', age: 80 },
@@ -122,13 +119,11 @@ Nestit.prototype.sum = function (field) {
    if (check_value > 0 && check_value < len)
       throw new "Not all objects in array have 'values' key or contains 'values' as an non-array object.";
 
-
    if (check_key > 0 && check_key < len)
       throw new "Not all objects in array have 'key' key or contains 'key' as an non-string object.";
 
    if (check_label > 0 && check_label < len)
       throw new "Not all objects in array have 'label' key or contains 'label' as an non-string object.";
-
 
    if (check_value > 0) {
       let k = 0
@@ -281,13 +276,11 @@ Nestit.prototype.reduce = function(callback, initialValue, label)
    if (check_value > 0 && check_value < len)
       throw "Not all objects in array have 'values' key or contains 'values' as an non-array object.";
 
-
    if (check_key > 0 && check_key < len)
       throw "Not all objects in array have 'key' key or contains 'key' as an non-string object.";
 
    if (check_label > 0 && check_label < len)
       throw "Not all objects in array have 'label' key or contains 'label' as an non-string object.";
-
 
    if (check_value > 0) {
       let k = 0
@@ -413,26 +406,6 @@ Nestit.prototype.dispatch = function (argsArray) {
 }
 
 
-// let test = new Nestit(names_dataset);
-// let jjj = test.by('surname');
-// let testtwo = new Nestit(names_dataset).by('surname', 'surname');
-// let testthree = testtwo.by('gender', 'label');
-
-// let data = new Nestit(names_dataset)
-//    .by('surname')
-//    .by('gender')
-//    .Array;
-
-// for (bysurname of data) {
-//    let bysurname_values = bysurname.values;
-//    for (bygender of bysurname_values) {
-//       let bygender_values = bygender.values;
-//       for (value of bygender_values)
-//          console.log(`${value.name} is a ${value.gender} of the family ${value.surname}`);
-//    }
-// }
-
-
 let bysurnamewithage = new Nestit(names_dataset)
    .by(x => x.surname)
    .sum('age')
@@ -441,37 +414,24 @@ let bysurnamewithage = new Nestit(names_dataset)
    .Array;
 
 
-// const concat = (acc, x) => acc + '-'+ x.name;
-// const squareSumAge = (x) => x * x;
-
 let funcs = [[(x) => x.name, 'select name'],
    [(x) => x.age * x.age, 'square of age']]
-
-// funcs.push((x) => x * x);
-// const labels = ['concat', 'squareSumAge'];
-// const modes = ['reduce', 'map']
 
 let dispatchTest = new Nestit(names_dataset)
    .by(x => x.surname, 'surname')
    .dispatch(funcs)
    .Array;
 
-
-let dispatchTestActually = new Nestit(names_dataset)
+let groupBySurnameThenMapAndReduce = new Nestit(names_dataset)
    .by(x => x.surname, 'surname')
    .map(x => x.age * x.age, 'squareOfAges')
    .reduce((acc, x) => acc + x.age * x.age, 0, 'squareSumOfAges')
    .Array;
 
-
 let reduceTest = new Nestit(names_dataset)
    .by(x => x.surname, 'surname')
    .reduce((acc, x) => acc + '-' + x.name, x => x.name, "concatNames")
    .Array;
-
-
-let j = 0;
-
 
 
 
